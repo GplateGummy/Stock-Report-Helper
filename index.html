@@ -593,7 +593,6 @@
             const mentionsAtTop = document.getElementById('mentions-top-toggle').checked;
             const timeDisplay = generateTimeDisplay();
             let reportText = "";
-            let mentionsText = "";
             const mentions = [];
             reportText += timeDisplay + "\n\n";
 
@@ -603,7 +602,6 @@
                     line += '+ ';
                 }
                 if (isGear) {
-
                     let gearName = item.name;
                     if (value === 1) {
                         let words = gearName.split(" ");
@@ -624,7 +622,6 @@
                         line += `${item.emoji} x${value} ${gearName}`;
                     }
                 } else {
-
                     const itemType = value === 1 ? ' seed' : ' seeds';
                     if (!useEmoji) {
                         line += `x${value} ${item.name}${itemType}`;
@@ -653,12 +650,13 @@
                 }
             });
 
+            let mentionsText = "";
             if (mentions.length > 0) {
-                mentionsText = mentions.join(', ') + '\n\n';
+                mentionsText = mentions.join(', ');
             }
 
-            if (useMentions && mentionsAtTop && mentions.length > 0) {
-                reportText = mentionsText + reportText;
+            if (useMentions && mentionsAtTop && mentionsText) {
+                reportText = mentionsText + "\n\n" + reportText;
             }
 
             const seedsTitle = "SEEDS STOCK";
@@ -775,9 +773,10 @@
                 }
             }
 
-            if (useMentions && !mentionsAtTop && mentions.length > 0) {
-                reportText = reportText + "\n\n" + mentionsText.trim();
+            if (useMentions && !mentionsAtTop && mentionsText) {
+                reportText = reportText + "\n\n" + mentionsText;
             }
+
             outputText.textContent = reportText;
         }
 
