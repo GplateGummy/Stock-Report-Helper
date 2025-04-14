@@ -559,20 +559,40 @@
       reportText += timeDisplay + "\n\n";
 
       const formatItem = (item, value, isGear = false) => {
-        let line = '';
-        if (usePlusSymbol) {
-          line += '+ ';
-        }
-        const itemType = isGear ? '' : (value === 1 ? ' seed' : ' seeds');
-        if (!useEmoji) {
-          line += `x${value} ${item.name}${itemType}`;
-        } else if (seedEmojiBeforeName) {
-          line += `x${value} ${item.emoji} ${item.name}${itemType}`;
-        } else {
-          line += `${item.emoji} x${value} ${item.name}${itemType}`;
-        }
-        return line;
-      };
+  let line = '';
+  if (usePlusSymbol) {
+    line += '+ ';
+  }
+  if (isGear) {
+    let gearName = item.name;
+    if (value === 1) {
+      const words = gearName.split(" ");
+      const lastWord = words[words.length - 1];
+      if (lastWord.endsWith("s")) {
+        words[words.length - 1] = lastWord.slice(0, -1).toLowerCase();
+        gearName = words.join(" ");
+      }
+    }
+    if (!useEmoji) {
+      line += `x${value} ${gearName}`;
+    } else if (seedEmojiBeforeName) {
+      line += `x${value} ${item.emoji} ${gearName}`;
+    } else {
+      line += `${item.emoji} x${value} ${gearName}`;
+    }
+  } else {
+    const itemType = value === 1 ? ' seed' : ' seeds';
+    if (!useEmoji) {
+      line += `x${value} ${item.name}${itemType}`;
+    } else if (seedEmojiBeforeName) {
+      line += `x${value} ${item.emoji} ${item.name}${itemType}`;
+    } else {
+      line += `${item.emoji} x${value} ${item.name}${itemType}`;
+    }
+  }
+  return line;
+};
+
 
       seeds.forEach(seed => {
         const input = document.getElementById(`seed-${seed.name.toLowerCase().replace(/\s+/g, '-')}`);
