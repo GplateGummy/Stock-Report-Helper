@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Discord Seed & Gear Stock Tracker</title>
     <style>
-
         * {
             box-sizing: border-box;
             margin: 0;
@@ -330,7 +329,7 @@
             <!-- Style Options -->
             <div class="settings-group">
                 <div class="settings-header" data-target="style-options">
-                    Style Options
+                    Order Options
                     <span class="indicator">►</span>
                 </div>
                 <div class="settings-content" id="style-options">
@@ -362,6 +361,36 @@
                                 <span class="toggle-slider"></span>
                             </label>
                             <span class="toggle-text">Add plus symbol</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mention Options - NEW SECTION -->
+            <div class="settings-group">
+                <div class="settings-header" data-target="mention-options">
+                    Mention Options
+                    <span class="indicator">►</span>
+                </div>
+                <div class="settings-content" id="mention-options">
+                    <div class="toggle-row">
+                        <label class="toggle-label">
+                            <span class="toggle-text">No Mentions</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="use-mentions-toggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-text">Enable Mentions</span>
+                        </label>
+                    </div>
+                    <div class="toggle-row">
+                        <label class="toggle-label">
+                            <span class="toggle-text">Mentions At Bottom</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="mentions-top-toggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-text">Mentions At Top</span>
                         </label>
                     </div>
                 </div>
@@ -405,28 +434,27 @@
     </div>
 
     <script>
-
         const seeds = [
-            { name: "Carrot", emoji: "🥕" },
-            { name: "Strawberry", emoji: "🍓" },
-            { name: "Blueberry", emoji: "🫐" },
-            { name: "Tomato", emoji: "🍅" },
-            { name: "Corn", emoji: "🌽" },
-            { name: "Watermelon", emoji: "🍉" },
-            { name: "Pumpkin", emoji: "🎃" },
-            { name: "Apple", emoji: "🍎" },
-            { name: "Bamboo", emoji: "🎍" },
-            { name: "Coconut", emoji: "🥥" },
-            { name: "Cactus", emoji: "🌵" },
-            { name: "Dragon Fruit", emoji: "🐉" },
-            { name: "Mango", emoji: "🥭" }
+            { name: "Carrot", emoji: "🥕", roleId: null },
+            { name: "Strawberry", emoji: "🍓", roleId: null },
+            { name: "Blueberry", emoji: "🫐", roleId: null },
+            { name: "Tomato", emoji: "🍅", roleId: null },
+            { name: "Corn", emoji: "🌽", roleId: "1361310460288172112" },
+            { name: "Watermelon", emoji: "🍉", roleId: "1360818423973806282" },
+            { name: "Pumpkin", emoji: "🎃", roleId: "1360818420861501600" },
+            { name: "Apple", emoji: "🍎", roleId: "1360818417913036873" },
+            { name: "Bamboo", emoji: "🎍", roleId: "1360818413718605994" },
+            { name: "Coconut", emoji: "🥥", roleId: "1360818412766498896" },
+            { name: "Cactus", emoji: "🌵", roleId: "1360818411982028964" },
+            { name: "Dragon Fruit", emoji: "🐉", roleId: "1360818402033401937" },
+            { name: "Mango", emoji: "🥭", roleId: "1360819164951875645" }
         ];
 
         const gears = [
-            { name: "Watering Cans", emoji: "🚰" },
-            { name: "Basic Sprinklers", emoji: "🔵" },
-            { name: "Advanced Sprinklers", emoji: "🟡" },
-            { name: "Godly Sprinklers", emoji: "🟢" }
+            { name: "Watering Cans", emoji: "🚰", roleId: null },
+            { name: "Basic Sprinklers", emoji: "🔵", roleId: null },
+            { name: "Advanced Sprinklers", emoji: "🟡", roleId: "1361266529345212578" },
+            { name: "Godly Sprinklers", emoji: "🟢", roleId: "1361266515919241278" }
         ];
 
         const seedsGrid = document.getElementById('seeds-grid');
@@ -437,20 +465,14 @@
         const copyBtn = document.getElementById('copy-btn');
 
         function generateTimeDisplay() {
-
             const now = new Date();
-
             let minutes = now.getMinutes();
-
             minutes = Math.floor(minutes / 5) * 5;
-
             const formattedMinutes = minutes.toString().padStart(2, '0');
-
             return `xx:${formattedMinutes}`;
         }
 
         function initializeGrids() {
-
             seeds.forEach(seed => {
                 const itemCard = document.createElement('div');
                 itemCard.className = 'item-card';
@@ -544,7 +566,6 @@
         }
 
         function generateStockReport() {
-
             const useCodeblock = document.getElementById('codeblock-toggle').checked;
             const useSingleCodeblock = document.getElementById('single-codeblock-toggle').checked;
             const titlesInside = document.getElementById('titles-inside-toggle').checked;
@@ -553,9 +574,14 @@
             const seedEmojiBeforeName = document.getElementById('seed-emoji-toggle').checked;
             const usePlusSymbol = document.getElementById('plus-symbol-toggle').checked;
 
+            const useMentions = document.getElementById('use-mentions-toggle').checked;
+            const mentionsAtTop = document.getElementById('mentions-top-toggle').checked;
+
             const timeDisplay = generateTimeDisplay();
 
             let reportText = "";
+            let mentionsText = "";
+            const mentions = [];
 
             reportText += timeDisplay + "\n\n";
 
@@ -578,6 +604,32 @@
 
                 return line;
             };
+
+            seeds.forEach(seed => {
+                const input = document.getElementById(`seed-${seed.name.toLowerCase().replace(/\s+/g, '-')}`);
+                const value = parseInt(input.value, 10);
+
+                if (value > 0 && seed.roleId && useMentions) {
+                    mentions.push(`<@&${seed.roleId}>`);
+                }
+            });
+
+            gears.forEach(gear => {
+                const input = document.getElementById(`gear-${gear.name.toLowerCase().replace(/\s+/g, '-')}`);
+                const value = parseInt(input.value, 10);
+
+                if (value > 0 && gear.roleId && useMentions) {
+                    mentions.push(`<@&${gear.roleId}>`);
+                }
+            });
+
+            if (mentions.length > 0) {
+                mentionsText = mentions.join(', ') + '\n\n';
+            }
+
+            if (useMentions && mentionsAtTop && mentions.length > 0) {
+                reportText = mentionsText + reportText;
+            }
 
             const seedsTitle = "SEEDS STOCK";
             let seedsContent = "";
@@ -608,11 +660,8 @@
             });
 
             if (useCodeblock) {
-
                 if (useSingleCodeblock && (titlesInside || (!titlesInside && (!hasSeeds || !hasGear)))) {
-
                     if (gearFirst) {
-
                         if (hasGear) {
                             if (!titlesInside) reportText += gearTitle + "\n";
                             reportText += "```diff\n";
@@ -633,7 +682,6 @@
                             reportText += "```";
                         }
                     } else {
-
                         if (hasSeeds) {
                             if (!titlesInside) reportText += seedsTitle + "\n";
                             reportText += "```diff\n";
@@ -655,7 +703,6 @@
                         }
                     }
                 } else {
-
                     if (gearFirst) {
                         if (hasGear) {
                             if (!titlesInside) reportText += gearTitle + "\n";
@@ -685,7 +732,6 @@
                     }
                 }
             } else {
-
                 if (gearFirst) {
                     if (hasGear) {
                         reportText += gearTitle + "\n" + gearContent;
@@ -705,11 +751,14 @@
                 }
             }
 
+            if (useMentions && !mentionsAtTop && mentions.length > 0) {
+                reportText = reportText + "\n\n" + mentionsText.trim();
+            }
+
             outputText.textContent = reportText;
         }
 
         function resetValues() {
-
             seeds.forEach(seed => {
                 const input = document.getElementById(`seed-${seed.name.toLowerCase().replace(/\s+/g, '-')}`);
                 input.value = 0;
