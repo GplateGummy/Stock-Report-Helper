@@ -646,56 +646,47 @@
             const mentions = [];
             reportText += timeDisplay + "\n\n";
 
-            const formatItem = (item, value, isGear = false) => {
+            const formatItem = (item, value, itemType = 'seeds', isGear = false) => {
                 let line = '';
                 if (usePlusSymbol) {
                     line += '+ ';
                 }
+
+                let displayName = item.name;
+
+                if (value === 1) {
+                    let words = displayName.split(" ");
+                    let lastWord = words.pop();
+
+                    if (lastWord.toLowerCase().endsWith("s")) {
+                        lastWord = lastWord.slice(0, -1);
+                    }
+
+                    displayName = [...words, lastWord].join(" ");
+
+                    if (!isGear && itemType.endsWith('s')) {
+                        itemType = itemType.slice(0, -1);
+                    }
+                }
+
                 if (isGear) {
-                    let gearName = item.name;
-                    if (value === 1) {
-                        let words = gearName.split(" ");
-
-                        let lastWord = words.pop();
-                        if (lastWord.toLowerCase().endsWith("s")) {
-                            lastWord = lastWord.slice(0, -1).toLowerCase();
-                        } else {
-                            lastWord = lastWord.toLowerCase();
-                        }
-                        gearName = words.join(" ") + " " + lastWord;
-                    }
                     if (!useEmoji) {
-                        line += `x${value} ${gearName}`;
+                        line += `x${value} ${displayName}`;
                     } else if (seedEmojiBeforeName) {
-                        line += `x${value} ${item.emoji} ${gearName}`;
+                        line += `x${value} ${item.emoji} ${displayName}`;
                     } else {
-                        line += `${item.emoji} x${value} ${gearName}`;
+                        line += `${item.emoji} x${value} ${displayName}`;
                     }
                 } else {
-                    const itemType = value === 1 ? ' seed' : ' seeds';
                     if (!useEmoji) {
-                        line += `x${value} ${item.name}${itemType}`;
+                        line += `x${value} ${displayName} ${itemType}`;
                     } else if (seedEmojiBeforeName) {
-                        line += `x${value} ${item.emoji} ${item.name}${itemType}`;
+                        line += `x${value} ${item.emoji} ${displayName} ${itemType}`;
                     } else {
-                        line += `${item.emoji} x${value} ${item.name}${itemType}`;
+                        line += `${item.emoji} x${value} ${displayName} ${itemType}`;
                     }
                 }
-                return line;
-            };
 
-            const formatEasterItem = (item, value) => {
-                let line = '';
-                if (usePlusSymbol) {
-                    line += '+ ';
-                }
-                if (!useEmoji) {
-                    line += `x${value} ${item.name}`;
-                } else if (seedEmojiBeforeName) {
-                    line += `x${value} ${item.emoji} ${item.name}`;
-                } else {
-                    line += `${item.emoji} x${value} ${item.name}`;
-                }
                 return line;
             };
 
@@ -740,7 +731,7 @@
                 const value = parseInt(input.value, 10);
                 if (value > 0) {
                     hasSeeds = true;
-                    seedsContent += formatItem(seed, value) + "\n";
+                    seedsContent += formatItem(seed, value, 'seeds') + "\n";
                 }
             });
 
@@ -752,7 +743,7 @@
                 const value = parseInt(input.value, 10);
                 if (value > 0) {
                     hasGear = true;
-                    gearContent += formatItem(gear, value, true) + "\n";
+                    gearContent += formatItem(gear, value, '', true) + "\n";
                 }
             });
 
@@ -764,7 +755,7 @@
                 const value = parseInt(input.value, 10);
                 if (value > 0) {
                     hasEasterItems = true;
-                    easterContent += formatEasterItem(item, value) + "\n";
+                    easterContent += formatItem(item, value, 'items') + "\n";
                 }
             });
 
