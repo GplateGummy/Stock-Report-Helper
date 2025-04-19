@@ -412,6 +412,17 @@
         </div>
     </div>
 
+    <!-- Easter Items Section -->
+    <div class="section" id="easter-section">
+        <div class="section-header">
+            <h2>Easter Stock</h2>
+            <span class="indicator">▼</span>
+        </div>
+        <div class="section-content open">
+            <div class="item-grid" id="easter-grid"></div>
+        </div>
+    </div>
+
     <!-- Gear Section -->
     <div class="section" id="gear-section">
         <div class="section-header">
@@ -441,8 +452,10 @@
             { name: "Carrot", emoji: "🥕", roleId: null },
             { name: "Strawberry", emoji: "🍓", roleId: null },
             { name: "Blueberry", emoji: "🫐", roleId: null },
+            { name: "Orange Tulip", emoji: "🌷", roleId: null },
             { name: "Tomato", emoji: "🍅", roleId: null },
             { name: "Corn", emoji: "🌽", roleId: "1361310460288172112" },
+            { name: "Daffodil", emoji: "💮", roleId: null },
             { name: "Watermelon", emoji: "🍉", roleId: "1360818423973806282" },
             { name: "Pumpkin", emoji: "🎃", roleId: "1360818420861501600" },
             { name: "Apple", emoji: "🍎", roleId: "1360818417913036873" },
@@ -450,14 +463,25 @@
             { name: "Coconut", emoji: "🥥", roleId: "1360818412766498896" },
             { name: "Cactus", emoji: "🌵", roleId: "1360818411982028964" },
             { name: "Dragon Fruit", emoji: "🐉", roleId: "1360818402033401937" },
-            { name: "Mango", emoji: "🥭", roleId: "1360819164951875645" }
+            { name: "Mango", emoji: "🥭", roleId: "1360819164951875645" },
+            { name: "Grape", emoji: "🍇", roleId: null }
+        ];
+
+        const easterItems = [
+            { name: "Chocolate Carrot", emoji: "🍫", roleId: null },
+            { name: "Red Lollipop", emoji: "🍭", roleId: null },
+            { name: "Candy Sunflower", emoji: "🌻", roleId: null },
+            { name: "Easter Egg", emoji: "🥚", roleId: null },
+            { name: "Chocolate Sprinkler", emoji: "🍫", roleId: null },
+            { name: "Candy Blossom", emoji: "🌸", roleId: null }
         ];
 
         const gears = [
             { name: "Watering cans", emoji: "🚰", roleId: null },
             { name: "Basic sprinklers", emoji: "🔵", roleId: null },
             { name: "Advanced sprinklers", emoji: "🟡", roleId: "1361266529345212578" },
-            { name: "Godly sprinklers", emoji: "🟢", roleId: "1361266515919241278" }
+            { name: "Godly sprinklers", emoji: "🟢", roleId: "1361266515919241278" },
+            { name: "Master sprinklers", emoji: "🟣", roleId: null }
         ];
 
         const seedsGrid = document.getElementById('seeds-grid');
@@ -466,6 +490,32 @@
         const generateBtn = document.getElementById('generate-btn');
         const resetBtn = document.getElementById('reset-btn');
         const copyBtn = document.getElementById('copy-btn');
+        const easterGrid = document.getElementById('easter-grid');
+
+        easterItems.forEach(item => {
+            const itemCard = document.createElement('div');
+            itemCard.className = 'item-card';
+
+            const label = document.createElement('label');
+
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = '0';
+            input.value = '0';
+            input.id = `easter-${item.name.toLowerCase().replace(/\s+/g, '-')}`;
+
+            input.addEventListener('change', function () {
+                if (this.value < 0) this.value = 0;
+                this.value = parseInt(this.value, 10) || 0;
+            });
+
+            const itemText = document.createTextNode(` ${item.emoji} ${item.name}`);
+
+            label.appendChild(input);
+            label.appendChild(itemText);
+            itemCard.appendChild(label);
+            easterGrid.appendChild(itemCard);
+        });
 
         function generateTimeDisplay() {
             const now = new Date();
@@ -634,6 +684,21 @@
                 return line;
             };
 
+            const formatEasterItem = (item, value) => {
+                let line = '';
+                if (usePlusSymbol) {
+                    line += '+ ';
+                }
+                if (!useEmoji) {
+                    line += `x${value} ${item.name}`;
+                } else if (seedEmojiBeforeName) {
+                    line += `x${value} ${item.emoji} ${item.name}`;
+                } else {
+                    line += `${item.emoji} x${value} ${item.name}`;
+                }
+                return line;
+            };
+
             seeds.forEach(seed => {
                 const input = document.getElementById(`seed-${seed.name.toLowerCase().replace(/\s+/g, '-')}`);
                 const value = parseInt(input.value, 10);
@@ -647,6 +712,14 @@
                 const value = parseInt(input.value, 10);
                 if (value > 0 && gear.roleId && useMentions) {
                     mentions.push(`<@&${gear.roleId}>`);
+                }
+            });
+
+            easterItems.forEach(item => {
+                const input = document.getElementById(`easter-${item.name.toLowerCase().replace(/\s+/g, '-')}`);
+                const value = parseInt(input.value, 10);
+                if (value > 0 && item.roleId && useMentions) {
+                    mentions.push(`<@&${item.roleId}>`);
                 }
             });
 
@@ -683,46 +756,71 @@
                 }
             });
 
+            const easterTitle = "EASTER STOCK";
+            let easterContent = "";
+            let hasEasterItems = false;
+            easterItems.forEach(item => {
+                const input = document.getElementById(`easter-${item.name.toLowerCase().replace(/\s+/g, '-')}`);
+                const value = parseInt(input.value, 10);
+                if (value > 0) {
+                    hasEasterItems = true;
+                    easterContent += formatEasterItem(item, value) + "\n";
+                }
+            });
+
             if (useCodeblock) {
-                if (useSingleCodeblock && (titlesInside || (!titlesInside && (!hasSeeds || !hasGear)))) {
+                if (useSingleCodeblock && (titlesInside || (!titlesInside && (!hasSeeds || (!hasGear && !hasEasterItems))))) {
+                    let content = "```diff\n";
+
                     if (gearFirst) {
                         if (hasGear) {
-                            if (!titlesInside) reportText += gearTitle + "\n";
-                            reportText += "```diff\n";
-                            if (titlesInside) reportText += gearTitle + "\n";
-                            reportText += gearContent;
-                            if (hasSeeds) {
-                                if (titlesInside) reportText += "\n" + seedsTitle + "\n";
-                                reportText += seedsContent;
-                            }
-                            reportText += "```";
-                            if (hasSeeds && !titlesInside) reportText += "\n" + seedsTitle;
-                        } else if (hasSeeds) {
-                            if (!titlesInside) reportText += seedsTitle + "\n";
-                            reportText += "```diff\n";
-                            if (titlesInside) reportText += seedsTitle + "\n";
-                            reportText += seedsContent;
-                            reportText += "```";
+                            if (titlesInside) content += gearTitle + "\n";
+                            content += gearContent;
+                        }
+                        if (hasSeeds) {
+                            if (hasGear && titlesInside) content += "\n";
+                            if (titlesInside) content += seedsTitle + "\n";
+                            content += seedsContent;
+                        }
+                        if (hasEasterItems) {
+                            if ((hasGear || hasSeeds) && titlesInside) content += "\n";
+                            if (titlesInside) content += easterTitle + "\n";
+                            content += easterContent;
                         }
                     } else {
                         if (hasSeeds) {
-                            if (!titlesInside) reportText += seedsTitle + "\n";
-                            reportText += "```diff\n";
-                            if (titlesInside) reportText += seedsTitle + "\n";
-                            reportText += seedsContent;
-                            if (hasGear) {
-                                if (titlesInside) reportText += "\n" + gearTitle + "\n";
-                                reportText += gearContent;
-                            }
-                            reportText += "```";
-                            if (hasGear && !titlesInside) reportText += "\n" + gearTitle;
-                        } else if (hasGear) {
-                            if (!titlesInside) reportText += gearTitle + "\n";
-                            reportText += "```diff\n";
-                            if (titlesInside) reportText += gearTitle + "\n";
-                            reportText += gearContent;
-                            reportText += "```";
+                            if (titlesInside) content += seedsTitle + "\n";
+                            content += seedsContent;
                         }
+                        if (hasGear) {
+                            if (hasSeeds && titlesInside) content += "\n";
+                            if (titlesInside) content += gearTitle + "\n";
+                            content += gearContent;
+                        }
+                        if (hasEasterItems) {
+                            if ((hasSeeds || hasGear) && titlesInside) content += "\n";
+                            if (titlesInside) content += easterTitle + "\n";
+                            content += easterContent;
+                        }
+                    }
+
+                    content += "```";
+
+                    if (!titlesInside) {
+                        let titles = "";
+                        if (gearFirst) {
+                            if (hasGear) titles += gearTitle + "\n";
+                            if (hasSeeds) titles += seedsTitle + "\n";
+                            if (hasEasterItems) titles += easterTitle + "\n";
+                        } else {
+                            if (hasSeeds) titles += seedsTitle + "\n";
+                            if (hasGear) titles += gearTitle + "\n";
+                            if (hasEasterItems) titles += easterTitle + "\n";
+                        }
+
+                        reportText = reportText + titles + content;
+                    } else {
+                        reportText += content;
                     }
                 } else {
                     if (gearFirst) {
@@ -736,7 +834,13 @@
                             if (!titlesInside) reportText += seedsTitle + "\n";
                             reportText += "```diff\n";
                             if (titlesInside) reportText += seedsTitle + "\n";
-                            reportText += seedsContent + "```";
+                            reportText += seedsContent + "```\n";
+                        }
+                        if (hasEasterItems) {
+                            if (!titlesInside) reportText += easterTitle + "\n";
+                            reportText += "```diff\n";
+                            if (titlesInside) reportText += easterTitle + "\n";
+                            reportText += easterContent + "```";
                         }
                     } else {
                         if (hasSeeds) {
@@ -749,7 +853,13 @@
                             if (!titlesInside) reportText += gearTitle + "\n";
                             reportText += "```diff\n";
                             if (titlesInside) reportText += gearTitle + "\n";
-                            reportText += gearContent + "```";
+                            reportText += gearContent + "```\n";
+                        }
+                        if (hasEasterItems) {
+                            if (!titlesInside) reportText += easterTitle + "\n";
+                            reportText += "```diff\n";
+                            if (titlesInside) reportText += easterTitle + "\n";
+                            reportText += easterContent + "```";
                         }
                     }
                 }
@@ -762,6 +872,10 @@
                         if (hasGear) reportText += "\n";
                         reportText += seedsTitle + "\n" + seedsContent;
                     }
+                    if (hasEasterItems) {
+                        if (hasGear || hasSeeds) reportText += "\n";
+                        reportText += easterTitle + "\n" + easterContent;
+                    }
                 } else {
                     if (hasSeeds) {
                         reportText += seedsTitle + "\n" + seedsContent;
@@ -769,6 +883,10 @@
                     if (hasGear) {
                         if (hasSeeds) reportText += "\n";
                         reportText += gearTitle + "\n" + gearContent;
+                    }
+                    if (hasEasterItems) {
+                        if (hasSeeds || hasGear) reportText += "\n";
+                        reportText += easterTitle + "\n" + easterContent;
                     }
                 }
             }
@@ -783,6 +901,10 @@
         function resetValues() {
             seeds.forEach(seed => {
                 const input = document.getElementById(`seed-${seed.name.toLowerCase().replace(/\s+/g, '-')}`);
+                input.value = 0;
+            });
+            easterItems.forEach(item => {
+                const input = document.getElementById(`easter-${item.name.toLowerCase().replace(/\s+/g, '-')}`);
                 input.value = 0;
             });
             gears.forEach(gear => {
